@@ -1,9 +1,7 @@
 import hashlib  # Importing libraries for hashing
 import tkinter as tk
+from tkinter import filedialog, messagebox
 from os import urandom
-from tkinter import *
-from tkinter import messagebox, filedialog
-
 from Crypto.Cipher import AES  # Importing AES algorithm
 
 # Salt size in bytes
@@ -18,9 +16,12 @@ def generate_key(password, salt, ITERATIONS):
     assert ITERATIONS > 0
     key = password + salt
 
+    print(salt, password, key)
+
     for i in range(ITERATIONS):
         key = hashlib.sha256(key).digest()
 
+    print(key)
     return key
 
 
@@ -70,20 +71,19 @@ def decrypt(ciphertext, password):
     return plaintext
 
 
-filename = None
-
-
 # Encrypt a file
-def encrypt_file(filename, key):
+def encrypt_file(password):
+
     with open(filename, 'r') as f:
         plaintext = f.read()
+
     enc = encrypt(plaintext, password)
     with open(filename + ".enc", 'w') as f:
         f.write(enc)
 
 
 # Decrypt a file
-def decrypt_file(filename, key):
+def decrypt_file(filename, password):
     with open(filename, 'rb') as f:
         ciphertext = f.read()
     dec = decrypt(ciphertext, password)
@@ -93,38 +93,39 @@ def decrypt_file(filename, key):
 
 # Load text file
 def load_file():
-    global key, filename
-    text_file = filedialog.askopenfile(filetypes=[('Text Files', 'txt')])
-    if text_file.name != None:
-        filename = text_file.name
+
+    global filename
+
+    text_file = tk.filedialog.askopenfile(filetypes=[('Text Files', 'txt')])
+    filename = text_file.name
 
 
 # Adding encryption functionality to GUI
 def encrypt_the_file():
-    global filename, password
-    enc_pass = passg.get()
-    if filename != None and enc_pass != "":
-        password = enc_pass
-        encrypt_file(filename, password)
+
+    password = passg.get()
+
+    if filename != None and password != "":
+        encrypt_file(password)
     else:
-        messagebox.showerror(title="Error:", message="There was no file loaded to encrypt")
+        tk.messagebox.showerror(title="Error:", message="There was no file loaded to encrypt")
 
 
 # Adding decryption functionality to GUI
 def decrypt_the_file():
-    global filename, password
+
     dec_pass = passg.get()
     if filename != None and dec_pass != "":
         password = dec_pass
         fname = filename + ".enc"
         decrypt_file(fname, password)
     else:
-        messagebox.showerror(title="Error:", message="There was no file loaded, and/or no password to decrypt")
+        tk.messagebox.showerror(title="Error:", message="There was no file loaded, and/or no password to decrypt")
 
 
 # Adding instruction functionality to GUI (how-to-use instructions for the program)
 def show_instruction():
-    messagebox.showinfo(title="Program instructions",
+    tk.messagebox.showinfo(title="Program instructions",
                         message="1. Enter password and load selected .txt\n2. When encrypting, a .txt.enc file will be created.\n3. Initial .txt file must be empty before decryption.")
 
 
@@ -137,14 +138,14 @@ show_instructionButton = tk.Button(root, text="Program Instructions", command=sh
 loadButton = tk.Button(root, text="Load Text File", command=load_file)
 encryptButton = tk.Button(root, text="Encrypt File", command=encrypt_the_file, width=15)
 decryptButton = tk.Button(root, text="Decrypt File", command=decrypt_the_file, width=15)
-passlabel = Label(root, text="Enter Encrypt/Decrypt Password:")
-passg = Entry(root, show="*", width=20)
+passlabel = tk.Label(root, text="Enter Encrypt/Decrypt Password:")
+passg = tk.Entry(root, show="*", width=20)
 
 show_instructionButton.pack()
 passlabel.pack()
 passg.pack()
 loadButton.pack()
-encryptButton.pack(side=LEFT)
-decryptButton.pack(side=RIGHT)
+encryptButton.pack(side=tk.LEFT)
+decryptButton.pack(side=tk.RIGHT)
 
 root.mainloop()
